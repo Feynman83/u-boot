@@ -11,6 +11,10 @@
 / {
 	model = "Freescale i.MX6 Quad SABRE Smart Device Board";
 	compatible = "fsl,imx6q-sabresd", "fsl,imx6q";
+	aliases {
+		mmc0 = &usdhc4;
+		mmc1 = &usdhc2;
+	};
 };
 
 &sata {
