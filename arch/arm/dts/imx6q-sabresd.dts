@@ -16,6 +16,9 @@
 &sata {
 	status = "okay";
 };
+&usdhc3 {
+	status = "disable";
+};
 
 &ipu1_csi1_from_mipi_vc1 {
 	clock-lanes = <0>;

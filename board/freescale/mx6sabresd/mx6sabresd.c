@@ -78,11 +78,7 @@ static iomux_v3_cfg_t const usdhc2_pads[] = {
 	IOMUX_PADS(PAD_SD2_DAT1__SD2_DATA1	| MUX_PAD_CTRL(USDHC_PAD_CTRL)),
 	IOMUX_PADS(PAD_SD2_DAT2__SD2_DATA2	| MUX_PAD_CTRL(USDHC_PAD_CTRL)),
 	IOMUX_PADS(PAD_SD2_DAT3__SD2_DATA3	| MUX_PAD_CTRL(USDHC_PAD_CTRL)),
-	IOMUX_PADS(PAD_NANDF_D4__SD2_DATA4	| MUX_PAD_CTRL(USDHC_PAD_CTRL)),
-	IOMUX_PADS(PAD_NANDF_D5__SD2_DATA5	| MUX_PAD_CTRL(USDHC_PAD_CTRL)),
-	IOMUX_PADS(PAD_NANDF_D6__SD2_DATA6	| MUX_PAD_CTRL(USDHC_PAD_CTRL)),
-	IOMUX_PADS(PAD_NANDF_D7__SD2_DATA7	| MUX_PAD_CTRL(USDHC_PAD_CTRL)),
-	IOMUX_PADS(PAD_NANDF_D2__GPIO2_IO02	| MUX_PAD_CTRL(NO_PAD_CTRL)), /* CD */
+	IOMUX_PADS(PAD_GPIO_4__GPIO1_IO04	| MUX_PAD_CTRL(NO_PAD_CTRL)), /* CD */
 };
 
 static iomux_v3_cfg_t const usdhc3_pads[] = {
@@ -237,10 +233,10 @@ int board_mmc_getcd(struct mmc *mmc)
 
 	switch (cfg->esdhc_base) {
 	case USDHC2_BASE_ADDR:
-		ret = !gpio_get_value(USDHC2_CD_GPIO);
+		ret = 1;//!gpio_get_value(USDHC2_CD_GPIO);
 		break;
 	case USDHC3_BASE_ADDR:
-		ret = !gpio_get_value(USDHC3_CD_GPIO);
+		ret = 0;//!gpio_get_value(USDHC3_CD_GPIO);
 		break;
 	case USDHC4_BASE_ADDR:
 		ret = 1; /* eMMC/uSDHC4 is always present */
@@ -479,6 +475,21 @@ static void setup_usb(void)
 }
 #endif
 
+#define WATCHDOG_GPIO IMX_GPIO_NR(4, 29)
+
+static iomux_v3_cfg_t const wd_pads[] = {
+	IOMUX_PADS(PAD_DISP0_DAT8__GPIO4_IO29 | MUX_PAD_CTRL(0x1a0b0)),
+};
+
+
+static void setup_watchdog(void) { //disable ext watchdog
+	SETUP_IOMUX_PADS(wd_pads);
+	gpio_request(WATCHDOG_GPIO, "Watchdog Disable");
+	gpio_direction_input(WATCHDOG_GPIO);
+}
+
+
+
 int board_early_init_f(void)
 {
 	setup_iomux_uart();
@@ -504,36 +515,12 @@ int board_init(void)
 #ifdef CONFIG_USB_EHCI_MX6
 	setup_usb();
 #endif
-
+	setup_watchdog();
 	return 0;
 }
 
 int power_init_board(void)
 {
-	struct pmic *p;
-	unsigned int reg;
-	int ret;
-
-	p = pfuze_common_init(I2C_PMIC);
-	if (!p)
-		return -ENODEV;
-
-	ret = pfuze_mode_init(p, APS_PFM);
-	if (ret < 0)
-		return ret;
-
-	/* Increase VGEN3 from 2.5 to 2.8V */
-	pmic_reg_read(p, PFUZE100_VGEN3VOL, &reg);
-	reg &= ~LDO_VOL_MASK;
-	reg |= LDOB_2_80V;
-	pmic_reg_write(p, PFUZE100_VGEN3VOL, reg);
-
-	/* Increase VGEN5 from 2.8 to 3V */
-	pmic_reg_read(p, PFUZE100_VGEN5VOL, &reg);
-	reg &= ~LDO_VOL_MASK;
-	reg |= LDOB_3_00V;
-	pmic_reg_write(p, PFUZE100_VGEN5VOL, reg);
-
 	return 0;
 }
 
@@ -600,7 +587,7 @@ static void ccgr_init(void)
 	writel(0x0FFFC000, &ccm->CCGR2);
 	writel(0x3FF00000, &ccm->CCGR3);
 	writel(0x00FFF300, &ccm->CCGR4);
-	writel(0x0F0000C3, &ccm->CCGR5);
+	writel(0x0F0000F3, &ccm->CCGR5);
 	writel(0x000003FF, &ccm->CCGR6);
 }
 
@@ -644,18 +631,18 @@ static int mx6q_dcd_table[] = {
 	0x020e05bc, 0x00000030,
 	0x020e05c4, 0x00000030,
 	0x021b0800, 0xa1390003,
-	0x021b080c, 0x001F001F,
-	0x021b0810, 0x001F001F,
-	0x021b480c, 0x001F001F,
-	0x021b4810, 0x001F001F,
-	0x021b083c, 0x43270338,
-	0x021b0840, 0x03200314,
-	0x021b483c, 0x431A032F,
-	0x021b4840, 0x03200263,
-	0x021b0848, 0x4B434748,
-	0x021b4848, 0x4445404C,
-	0x021b0850, 0x38444542,
-	0x021b4850, 0x4935493A,
+	0x021b080c, 0x00250025,
+	0x021b0810, 0x00250023,
+	0x021b480c, 0x000F0025,
+	0x021b4810, 0x000F001E,
+	0x021b083c, 0x431C032C,
+	0x021b0840, 0x03180314,
+	0x021b483c, 0x43280334,
+	0x021b4840, 0x03200268,
+	0x021b0848, 0x3C32383C,
+	0x021b4848, 0x38383440,
+	0x021b0850, 0x383C3E38,
+	0x021b4850, 0x4A344640,
 	0x021b081c, 0x33333333,
 	0x021b0820, 0x33333333,
 	0x021b0824, 0x33333333,
@@ -667,16 +654,16 @@ static int mx6q_dcd_table[] = {
 	0x021b08b8, 0x00000800,
 	0x021b48b8, 0x00000800,
 	0x021b0004, 0x00020036,
-	0x021b0008, 0x09444040,
-	0x021b000c, 0x555A7975,
-	0x021b0010, 0xFF538F64,
+	0x021b0008, 0x024444040,
+	0x021b000c, 0x8A8F7975,
+	0x021b0010, 0xFF530F64,
 	0x021b0014, 0x01FF00DB,
 	0x021b0018, 0x00001740,
 	0x021b001c, 0x00008000,
 	0x021b002c, 0x000026d2,
-	0x021b0030, 0x005A1023,
-	0x021b0040, 0x00000027,
-	0x021b0000, 0x831A0000,
+	0x021b0030, 0x00741023,
+	0x021b0040, 0x00000047,
+	0x021b0000, 0x841A0000,
 	0x021b001c, 0x04088032,
 	0x021b001c, 0x00008033,
 	0x021b001c, 0x00048031,
