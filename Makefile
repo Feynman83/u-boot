@@ -257,6 +257,8 @@ HOSTOS := $(shell uname -s | tr '[:upper:]' '[:lower:]' | \
 export	HOSTARCH HOSTOS
 
 #########################################################################
+export	ARCH =arm
+export	CROSS_COMPILE =arm-linux-gnueabi-
 
 # set default to nothing for native builds
 ifeq ($(HOSTARCH),$(ARCH))
