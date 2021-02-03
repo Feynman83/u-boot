@@ -223,7 +223,7 @@ struct fsl_esdhc_cfg usdhc_cfg[3] = {
 
 int board_mmc_get_env_dev(int devno)
 {
-	return devno - 1;
+	return devno==3? 0: devno;
 }
 
 int board_mmc_getcd(struct mmc *mmc)
@@ -236,7 +236,7 @@ int board_mmc_getcd(struct mmc *mmc)
 		ret = 1;//!gpio_get_value(USDHC2_CD_GPIO);
 		break;
 	case USDHC3_BASE_ADDR:
-		ret = 0;//!gpio_get_value(USDHC3_CD_GPIO);
+		ret = 1;//!gpio_get_value(USDHC3_CD_GPIO);
 		break;
 	case USDHC4_BASE_ADDR:
 		ret = 1; /* eMMC/uSDHC4 is always present */
