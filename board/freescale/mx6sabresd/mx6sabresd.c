@@ -489,6 +489,18 @@ static void setup_watchdog(void) { //disable ext watchdog
 }
 
 
+#define DETECT_GPIO IMX_GPIO_NR(7, 0)
+
+static iomux_v3_cfg_t const detect_pads[] = {
+	IOMUX_PADS(PAD_SD3_DAT5__GPIO7_IO00 | MUX_PAD_CTRL(0x1a0b0)),
+};
+
+
+static void setup_detect(void) { //enable detect
+	SETUP_IOMUX_PADS(detect_pads);
+	gpio_request(DETECT_GPIO, "RJ45&PHX Detect");
+	gpio_direction_input(DETECT_GPIO);
+}
 
 int board_early_init_f(void)
 {
@@ -515,6 +527,7 @@ int board_init(void)
 #ifdef CONFIG_USB_EHCI_MX6
 	setup_usb();
 #endif
+	setup_detect();
 	setup_watchdog();
 	return 0;
 }
