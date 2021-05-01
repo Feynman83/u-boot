@@ -120,10 +120,9 @@
 		"fi;\0" \
 		"findfdt="\
 			"if test $fdtfile = undefined; then " \
-				"if test gpio input 192 = 0 ; then " \
-					"setenv fdtfile imx6q-rbc-rj45.dtb; fi; " \
-				"if test gpio input 192 = 1; then " \
-					"setenv fdtfile imx6q-rbc-phx2.dtb; fi; " \
+				"if  gpio input 192 ; then " \
+					"setenv fdtfile imx6q-rbc-phx2.dtb; " \
+				"else setenv fdtfile imx6q-rbc-rj45.dtb; fi; " \				
 				"if test $fdtfile = undefined; then " \
 					"echo WARNING: Could not determine dtb to use; fi; " \
 			"fi;\0" \
